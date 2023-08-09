@@ -15,6 +15,8 @@ in {
         default = true;
       };
 
+      exposePackages = lib.mkEnableOption (lib.mdDoc "Expose all homeManagerConfigurations at `.#packages.<system>.home/<profile name>`");
+
       home-manager = lib.mkOption {
         type = lib.types.unspecified;
         description = lib.mdDoc "home-manager input to use for building all homeManagerConfigurations. Required";
@@ -23,6 +25,12 @@ in {
       nixpkgs = lib.mkOption {
         type = lib.types.unspecified;
         description = lib.mdDoc "The default nixpkgs input to use for building homeManagerConfigurations. Required";
+      };
+
+      system = lib.mkOption {
+        type = lib.types.enum lib.platforms.all;
+        description = lib.mdDoc "The default system to use for building homeManagerConfigurations";
+        default = "x86_64-linux";
       };
     };
 
@@ -88,7 +96,8 @@ in {
 
           system = lib.mkOption {
             type = lib.types.enum lib.platforms.all;
-            default = "x86_64-linux";
+            description = lib.mdDoc "system used for building the homeManagerConfiguration";
+            default = defaults.system;
           };
 
           username = lib.mkOption {
@@ -152,7 +161,7 @@ in {
     flake.homeConfigurations = homes;
 
     perSystem = {system, ...}: {
-      packages = lib.mkIf (builtins.hasAttr system packages) (lib.mkMerge packages.${system});
+      packages = lib.mkIf (defaults.exposePackages && (builtins.hasAttr system packages)) (lib.mkMerge packages.${system});
     };
   };
 }

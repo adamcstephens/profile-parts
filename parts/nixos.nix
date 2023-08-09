@@ -62,7 +62,7 @@ in {
 
           meta = lib.mkOption {
             type = lib.types.attrsOf lib.types.unspecified;
-            description = lib.mdDoc "Meta information for external use. Can be used ";
+            description = lib.mdDoc "Meta information for external use in other flake-parts modules.";
             default = {};
           };
 

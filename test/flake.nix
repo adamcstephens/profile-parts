@@ -23,5 +23,7 @@
           packages = [pkgs.just];
         };
       };
+
+      profile-parts.default.home-manager.exposePackages = true;
     };
 }
