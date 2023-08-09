@@ -1,11 +1,45 @@
 {
   config,
-  inputs,
   lib,
   withSystem,
   ...
-}: {
+}: let
+  defaults = config.profile-parts.default.home-manager;
+  globals = config.profile-parts.global.home-manager;
+in {
   options = {
+    profile-parts.default.home-manager = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        description = lib.mdDoc "Whether all homeManagerConfigurations should be enabled by default";
+        default = true;
+      };
+
+      home-manager = lib.mkOption {
+        type = lib.types.unspecified;
+        description = lib.mdDoc "home-manager input to use for building all homeManagerConfigurations. Required";
+      };
+
+      nixpkgs = lib.mkOption {
+        type = lib.types.unspecified;
+        description = lib.mdDoc "The default nixpkgs input to use for building homeManagerConfigurations. Required";
+      };
+    };
+
+    profile-parts.global.home-manager = {
+      modules = lib.mkOption {
+        type = lib.types.unspecified; # TODO make function capable
+        description = lib.mdDoc "List of modules to include in all homeManagerConfigurations. Can also be a function that will be passed the `name` and `profile`";
+        default = [];
+      };
+
+      specialArgs = lib.mkOption {
+        type = lib.types.attrsOf lib.types.unspecified;
+        description = lib.mdDoc "`extraSpecialArgs` passed to all homeManagerConfigurations";
+        default = {};
+      };
+    };
+
     profile-parts.home-manager = lib.mkOption {
       type = lib.types.attrsOf (lib.types.submodule ({
         name,
@@ -15,13 +49,13 @@
         options = {
           enable = lib.mkOption {
             type = lib.types.bool;
-            description = "Whether to expose the homeManagerConfiguration to the flake";
-            default = true;
+            description = lib.mdDoc "Whether to expose the homeManagerConfiguration to the flake";
+            default = defaults.enable;
           };
 
           directory = lib.mkOption {
             type = lib.types.str;
-            description = "The home directory passed to home-manager, or `home.homeDirectory`";
+            description = lib.mdDoc "The home directory passed to home-manager, or `home.homeDirectory`";
             default =
               if config.nixpkgs.legacyPackages.${config.system}.stdenv.isDarwin
               then "/Users/${config.username}"
@@ -30,25 +64,25 @@
 
           home-manager = lib.mkOption {
             type = lib.types.unspecified;
-            description = "home-manager input to use for building the homeManagerConfiguration";
-            default = inputs.home-manager;
+            description = lib.mdDoc "home-manager input to use for building the homeManagerConfiguration. Required to be set per-profile or using `default.home-manager.home-manager`";
+            default = defaults.home-manager;
           };
 
           modules = lib.mkOption {
             type = lib.types.listOf lib.types.unspecified;
-            description = "List of modules to include in the homeManagerConfiguration";
+            description = lib.mdDoc "List of modules to include in the homeManagerConfiguration";
             default = [];
           };
 
           nixpkgs = lib.mkOption {
             type = lib.types.unspecified;
-            description = "nixpkgs input to use for building the homeManagerConfiguration";
-            default = inputs.nixpkgs;
+            description = lib.mdDoc "nixpkgs input to use for building the homeManagerConfiguration. Required to be set per-profile or using `default.home-manager.nixpkgs";
+            default = defaults.nixpkgs;
           };
 
           specialArgs = lib.mkOption {
             type = lib.types.attrsOf lib.types.unspecified;
-            description = "`extraSpecialArgs` passed to the homeManagerConfiguration";
+            description = lib.mdDoc "`extraSpecialArgs` passed to the homeManagerConfiguration";
             default = {};
           };
 
@@ -59,7 +93,7 @@
 
           username = lib.mkOption {
             type = lib.types.str;
-            description = "The username passed to home-manager, or `home.username`. Defaults to profile name";
+            description = lib.mdDoc "The username passed to home-manager, or `home.username`. Defaults to profile name";
             default = name;
           };
 
@@ -77,26 +111,35 @@
           };
         };
 
-        config = lib.mkIf config.enable {
-          finalHome = withSystem config.system ({pkgs, ...}:
-            config.home-manager.lib.homeManagerConfiguration {
-              pkgs = config.nixpkgs.legacyPackages.${config.system};
+        config = let
+          profile = config;
+          globalModules =
+            if lib.isFunction globals.modules
+            then globals.modules {inherit name profile;}
+            else globals.modules;
+        in
+          lib.mkIf config.enable {
+            finalHome = withSystem config.system ({pkgs, ...}:
+              config.home-manager.lib.homeManagerConfiguration {
+                pkgs = config.nixpkgs.legacyPackages.${config.system};
 
-              extraSpecialArgs = config.specialArgs;
+                extraSpecialArgs = lib.recursiveUpdate globals.specialArgs profile.specialArgs;
 
-              modules =
-                [
-                  {
-                    home.homeDirectory = lib.mkDefault config.directory;
-                    home.username = lib.mkDefault config.username;
-                  }
-                ]
-                ++ config.modules;
-            });
+                modules =
+                  globalModules
+                  ++ [
+                    {
+                      home.homeDirectory = lib.mkDefault config.directory;
+                      home.username = lib.mkDefault config.username;
+                    }
+                  ]
+                  ++ config.modules;
+              });
 
-          finalPackage.${config.system}."home/${name}" = config.finalHome.activationPackage;
-        };
+            finalPackage.${config.system}."home/${name}" = config.finalHome.activationPackage;
+          };
       }));
+      description = lib.mdDoc "";
     };
   };
 

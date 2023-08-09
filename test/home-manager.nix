@@ -3,6 +3,21 @@
   inputs,
   ...
 }: {
+  profile-parts.default.home-manager = {
+    inherit (inputs) home-manager nixpkgs;
+  };
+
+  profile-parts.global.home-manager = {
+    modules = {
+      name,
+      profile,
+    }: [
+      {
+        home.file.testfile.text = "${name}-test-${profile.system}";
+      }
+    ];
+  };
+
   profile-parts.home-manager = {
     check-defaults = {
       modules = [
@@ -15,6 +30,23 @@
             {
               assertion = config.home.username == "check-defaults";
               message = "default username is incorrect";
+            }
+          ];
+
+          home.stateVersion = "23.05";
+        })
+      ];
+    };
+
+    check-globals = {
+      system = "aarch64-linux";
+
+      modules = [
+        ({config, ...}: {
+          assertions = [
+            {
+              assertion = config.home.file.testfile.text == "check-globals-test-aarch64-linux";
+              message = "Global module is not correctly calling or applying function";
             }
           ];
 

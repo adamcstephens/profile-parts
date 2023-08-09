@@ -3,7 +3,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     home-manager.url = "github:nix-community/home-manager";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    profile-parts.url = "git+https://codeberg.org/adamcstephens/profile-parts.git";
+    profile-parts.url = "path:../";
   };
 
   outputs = inputs @ {flake-parts, ...}:
@@ -16,6 +16,12 @@
         inputs.profile-parts.flakeModules.nixos
       ];
 
-      systems = ["x86_64-linux" "aarch64-darwin"];
+      systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin"];
+
+      perSystem = {pkgs, ...}: {
+        devShells.default = pkgs.mkShellNoCC {
+          packages = [pkgs.just];
+        };
+      };
     };
 }

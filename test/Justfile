@@ -1,0 +1,8 @@
+default: update-lock test
+
+update-lock:
+  nix flake lock --update-input profile-parts
+
+test:
+  nix flake show --all-systems
+  nix flake check --no-build
