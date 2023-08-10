@@ -32,6 +32,12 @@ in {
         description = lib.mdDoc "The default system to use for building homeManagerConfigurations";
         default = "x86_64-linux";
       };
+
+      username = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        description = lib.mdDoc "The default username passed to home-manager, or `home.username`. If unset, profiles will use their attribute name.";
+        default = null;
+      };
     };
 
     profile-parts.global.home-manager = {
@@ -102,14 +108,23 @@ in {
 
           username = lib.mkOption {
             type = lib.types.str;
-            description = lib.mdDoc "The username passed to home-manager, or `home.username`. Defaults to profile name";
-            default = name;
+            description = lib.mdDoc "The username passed to home-manager, or `home.username`. Defaults to default username if set, otherwise reads from the profile name";
+            default =
+              if (defaults.username == null)
+              then name
+              else defaults.username;
           };
 
           # readOnly
 
           finalHome = lib.mkOption {
             type = lib.types.unspecified;
+            readOnly = true;
+          };
+
+          finalModules = lib.mkOption {
+            type = lib.types.unspecified;
+            description = lib.mdDoc "Final set of modules available for ";
             readOnly = true;
           };
 
@@ -127,25 +142,27 @@ in {
             then globals.modules {inherit name profile;}
             else globals.modules;
         in
-          lib.mkIf config.enable {
-            finalHome = withSystem config.system ({pkgs, ...}:
-              config.home-manager.lib.homeManagerConfiguration {
-                pkgs = config.nixpkgs.legacyPackages.${config.system};
+          lib.mkIf profile.enable {
+            finalHome = withSystem profile.system ({pkgs, ...}:
+              profile.home-manager.lib.homeManagerConfiguration {
+                pkgs = profile.nixpkgs.legacyPackages.${profile.system};
 
                 extraSpecialArgs = lib.recursiveUpdate globals.specialArgs profile.specialArgs;
 
-                modules =
-                  globalModules
-                  ++ [
-                    {
-                      home.homeDirectory = lib.mkDefault config.directory;
-                      home.username = lib.mkDefault config.username;
-                    }
-                  ]
-                  ++ config.modules;
+                modules = profile.finalModules;
               });
 
-            finalPackage.${config.system}."home/${name}" = config.finalHome.activationPackage;
+            finalModules =
+              globalModules
+              ++ [
+                {
+                  home.homeDirectory = lib.mkDefault profile.directory;
+                  home.username = lib.mkDefault profile.username;
+                }
+              ]
+              ++ profile.modules;
+
+            finalPackage.${profile.system}."home/${name}" = profile.finalHome.activationPackage;
           };
       }));
       description = lib.mdDoc "";

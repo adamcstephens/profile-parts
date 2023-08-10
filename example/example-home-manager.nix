@@ -13,6 +13,8 @@
     system = "x86_64-linux";
 
     exposePackages = true; # expose packages for homeMangerConfigurations
+
+    username = "adam";
   };
 
   #
@@ -32,7 +34,7 @@
   # profiles
   #
   profile-parts.home-manager = {
-    adam = {
+    superadam = {
       home-manager = inputs.home-manager;
       nixpkgs = inputs.nixpkgs;
 
