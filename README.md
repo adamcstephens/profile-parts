@@ -2,11 +2,11 @@
 
 Simple NixOS or Home Manager profiles for [Flake Parts](https://flake.parts/)
 
-Flake Parts provides a module system for flakes. This flake provides modules wrappers around common configuration targets (e.g. nixosConfigurations or homeManagerConfigurations) to simplify their management.
+Flake Parts provides a module system for flakes. This flake provides modules wrappers around common configuration targets (e.g. nixosConfigurations or homeManagerConfigurations) to simplify managing multiple "profiles" in a single flake.
 
 ## Getting Started
 
-Add the necessary flake inputs to your `flake.nix`
+Add the necessary flake inputs to your `flake.nix`. This flake provides no inputs, so you will need to bring your own.
 
 ```nix
 {
@@ -19,7 +19,7 @@ Add the necessary flake inputs to your `flake.nix`
 }
 ```
 
-See [examples](./example) for profile examples.
+See [examples](./example) or [my dotfiles](https://codeberg.org/adamcstephens/dotfiles/src/commit/9f59b704ff483e95cd640de77299e21a5fa2379d/home/profiles.nix) which has home-manager profiles.
 
 ## Credits
 
