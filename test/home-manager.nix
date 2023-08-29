@@ -5,6 +5,9 @@
 }: {
   profile-parts.default.home-manager = {
     inherit (inputs) home-manager nixpkgs;
+
+    # required to ensure checks run
+    exposePackages = true;
   };
 
   profile-parts.global.home-manager = {

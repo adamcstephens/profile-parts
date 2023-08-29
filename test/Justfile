@@ -5,4 +5,4 @@ update-lock:
 
 test:
   nix flake show --all-systems
-  nix flake check --no-build
+  nix flake check --no-build --all-systems

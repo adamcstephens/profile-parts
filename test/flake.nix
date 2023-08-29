@@ -2,6 +2,7 @@
   inputs = {
     flake-parts.url = "github:hercules-ci/flake-parts";
     home-manager.url = "github:nix-community/home-manager";
+    nix-darwin.url = "github:lnl7/nix-darwin/master";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     profile-parts.url = "path:../";
   };
@@ -9,21 +10,21 @@
   outputs = inputs @ {flake-parts, ...}:
     flake-parts.lib.mkFlake {inherit inputs;} {
       imports = [
+        ./darwin.nix
         ./home-manager.nix
         ./nixos.nix
 
+        inputs.profile-parts.flakeModules.darwin
         inputs.profile-parts.flakeModules.home-manager
         inputs.profile-parts.flakeModules.nixos
       ];
 
-      systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin"];
+      systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
 
       perSystem = {pkgs, ...}: {
         devShells.default = pkgs.mkShellNoCC {
           packages = [pkgs.just];
         };
       };
-
-      profile-parts.default.home-manager.exposePackages = true;
     };
 }

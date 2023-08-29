@@ -13,9 +13,21 @@ Add the necessary flake inputs to your `flake.nix`. This flake provides no input
   inputs = {
     flake-parts.url = "github:hercules-ci/flake-parts";
     home-manager.url = "github:nix-community/home-manager"; # only needed if configuring home-manager profiles
+    nix-darwin.url = "github:lnl7/nix-darwin/master";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     profile-parts.url = "github:adamcstephens/profile-parts"; # or git+https://codeberg.org/adamcstephens/profile-parts.git
   };
+
+  outputs = inputs @ {flake-parts, ...}:
+    flake-parts.lib.mkFlake {inherit inputs;} {
+      imports = [
+        inputs.profile-parts.flakeModules.darwin
+        inputs.profile-parts.flakeModules.home-manager
+        inputs.profile-parts.flakeModules.nixos
+      ];
+
+      systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
+    };
 }
 ```
 
