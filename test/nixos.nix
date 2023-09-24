@@ -2,6 +2,8 @@
   profile-parts.default.nixos = {
     inherit (inputs) nixpkgs;
     system = "aarch64-linux";
+
+    exposePackages = true;
   };
 
   profile-parts.global.nixos = {
@@ -41,6 +43,10 @@
       ];
     };
 
+    check-disable = {
+      enable = false;
+    };
+
     check-globals = {
       system = "armv7l-linux";
 
@@ -60,7 +66,7 @@
 
     check-overrides = {
       hostname = "overridden";
-      system = "armv6l-linux";
+      system = "x86_64-linux";
 
       modules = [
         ({
@@ -75,7 +81,7 @@
               message = "specialArgs is not handled properly";
             }
             {
-              assertion = pkgs.system == "armv6l-linux";
+              assertion = pkgs.system == "x86_64-linux";
               message = "Override `system` is not applied to final nixosConfiguration";
             }
           ];

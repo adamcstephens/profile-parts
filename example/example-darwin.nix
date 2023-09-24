@@ -11,6 +11,8 @@
 
     enable = true;
     system = "aarch64-darwin";
+
+    exposePackages = true; # expose packages for darwinConfigurations, e.g. .#darwin/example
   };
 
   #

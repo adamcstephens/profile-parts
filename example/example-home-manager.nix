@@ -12,7 +12,7 @@
     enable = true;
     system = "x86_64-linux";
 
-    exposePackages = true; # expose packages for homeMangerConfigurations
+    exposePackages = true; # expose packages for homeManagerConfigurations, e.g. .#home/superadam
 
     username = "adam";
   };

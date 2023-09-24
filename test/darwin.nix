@@ -41,6 +41,10 @@
       ];
     };
 
+    check-disable = {
+      enable = false;
+    };
+
     check-globals = {
       modules = [
         ({config, ...}: {

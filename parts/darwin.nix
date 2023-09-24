@@ -156,10 +156,12 @@ in {
   };
 
   config = let
-    darwinProfiles = builtins.mapAttrs (_: config: config.finalDarwin) config.profile-parts.darwin;
+    enabledDarwins = lib.filterAttrs (_: v: v.enable) config.profile-parts.darwin;
+
+    darwinProfiles = builtins.mapAttrs (_: config: config.finalDarwin) enabledDarwins;
 
     # group checks into system-based sortings
-    packages = lib.zipAttrs (builtins.attrValues (lib.mapAttrs (_: i: i.finalPackage) config.profile-parts.darwin));
+    packages = lib.zipAttrs (builtins.attrValues (lib.mapAttrs (_: i: i.finalPackage) enabledDarwins));
   in {
     flake.darwinConfigurations = darwinProfiles;
 

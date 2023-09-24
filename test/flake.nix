@@ -19,7 +19,7 @@
         inputs.profile-parts.flakeModules.nixos
       ];
 
-      systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
+      systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" "armv7l-linux"];
 
       perSystem = {pkgs, ...}: {
         devShells.default = pkgs.mkShellNoCC {

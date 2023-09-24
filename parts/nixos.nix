@@ -15,6 +15,8 @@ in {
         default = true;
       };
 
+      exposePackages = lib.mkEnableOption (lib.mdDoc "Expose all nixosConfigurations at `.#packages.<system>.nixos/<profile name>`");
+
       nixpkgs = lib.mkOption {
         type = lib.types.unspecified;
         description = lib.mdDoc "The default nixpkgs input to use for building nixosConfigurations. Required";
@@ -97,6 +99,12 @@ in {
             description = lib.mdDoc "The final nixosConfiguration";
             readOnly = true;
           };
+
+          finalPackage = lib.mkOption {
+            type = lib.types.unspecified;
+            description = lib.mdDoc "Package to be added to allow building nixos profile top-level";
+            readOnly = true;
+          };
         };
 
         config = let
@@ -106,7 +114,7 @@ in {
             then globals.modules {inherit name profile;}
             else globals.modules;
         in
-          lib.mkIf profile.enable {
+          lib.mkIf profile.enable rec {
             finalNixos = withSystem profile.system (
               {...}:
                 profile.nixpkgs.lib.nixosSystem {
@@ -120,14 +128,25 @@ in {
                   specialArgs = lib.recursiveUpdate globals.specialArgs profile.specialArgs;
                 }
             );
+
+            finalPackage.${profile.system}."nixos/${name}" = finalNixos.config.system.build.toplevel;
           };
       }));
     };
   };
 
   config = let
-    profiles = builtins.mapAttrs (_: config: config.finalNixos) (lib.filterAttrs (_: v: v.enable) config.profile-parts.nixos);
+    enabledNixos = lib.filterAttrs (_: v: v.enable) config.profile-parts.nixos;
+
+    profiles = builtins.mapAttrs (_: config: config.finalNixos) enabledNixos;
+
+    # group checks into system-based sortings
+    packages = lib.zipAttrs (builtins.attrValues (lib.mapAttrs (_: i: i.finalPackage) enabledNixos));
   in {
     flake.nixosConfigurations = profiles;
+
+    perSystem = {system, ...}: {
+      packages = lib.mkIf (defaults.exposePackages && (builtins.hasAttr system packages)) (lib.mkMerge packages.${system});
+    };
   };
 }

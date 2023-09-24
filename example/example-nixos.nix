@@ -11,6 +11,8 @@
 
     enable = true;
     system = "x86_64-linux";
+
+    exposePackages = true; # expose packages for nixosConfigurations, e.g. .#nixos/example
   };
 
   #

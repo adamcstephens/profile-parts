@@ -170,10 +170,12 @@ in {
   };
 
   config = let
-    homes = builtins.mapAttrs (_: config: config.finalHome) config.profile-parts.home-manager;
+    enabledHomes = lib.filterAttrs (_: v: v.enable) config.profile-parts.home-manager;
+
+    homes = builtins.mapAttrs (_: config: config.finalHome) enabledHomes;
 
     # group checks into system-based sortings
-    packages = lib.zipAttrs (builtins.attrValues (lib.mapAttrs (_: i: i.finalPackage) config.profile-parts.home-manager));
+    packages = lib.zipAttrs (builtins.attrValues (lib.mapAttrs (_: i: i.finalPackage) enabledHomes));
   in {
     flake.homeConfigurations = homes;
 
