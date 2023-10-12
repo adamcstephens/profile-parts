@@ -4,6 +4,13 @@ Simple NixOS or Home Manager profiles for [Flake Parts](https://flake.parts/)
 
 Flake Parts provides a module system for flakes. This flake provides modules wrappers around common configuration targets (e.g. nixosConfigurations or homeManagerConfigurations) to simplify managing multiple "profiles" in a single flake.
 
+Goals:
+
+- Normalize configurations across profile types (e.g. home-manager `extraSpecialArgs` -> `specialArgs`)
+- No flake inputs, users must bring their own
+- Provide global configuration capability per profile type to simplify shared configurations
+- Support multiple system architectures
+
 ## Getting Started
 
 Add the necessary flake inputs to your `flake.nix`. This flake provides no inputs, so you will need to bring your own.
